@@ -13,24 +13,41 @@ const C = {
 const API_URL = "https://script.google.com/macros/s/AKfycbzTwte_tqaV3VW8Kad1mlh24-ECYDYQVEenTPBmAFYiuWz2Cxsrde-2mWLmLYXCInXA/exec";
 const POLL_MS = 30000;
 
-// Normaliza data: aceita Date, string ISO, string dd/mm/yyyy
+// Normaliza data: aceita Date, ISO, dd/mm/yyyy, "Tue Jun 10"
 function normData(v) {
-  if (!v) return "";
-  if (v instanceof Date) {
-    const y = v.getFullYear();
-    const m = String(v.getMonth() + 1).padStart(2, "0");
-    const d = String(v.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
-  }
-  const s = String(v).trim();
-  // já no formato yyyy-mm-dd
-  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
-  // formato dd/mm/yyyy
-  if (/^\d{2}\/\d{2}\/\d{4}/.test(s)) {
-    const [d, m, y] = s.split("/");
-    return `${y}-${m}-${d}`;
-  }
-  return s.slice(0, 10);
+if (!v) return "";
+if (v instanceof Date) {
+const y = v.getFullYear();
+const m = String(v.getMonth() + 1).padStart(2, "0");
+const d = String(v.getDate()).padStart(2, "0");
+return y + "-" + m + "-" + d;
+}
+const s = String(v).trim();
+if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+if (/^\d{2}\/\d{2}\/\d{4}/.test(s)) {
+const [d, m, y] = s.split("/");
+return y + "-" + m + "-" + d;
+}
+if (/^[A-Za-z]{3}\s+[A-Za-z]{3}\s+\d{1,2}/.test(s)) {
+const yearMatch = s.match(/\d{4}/);
+const year = yearMatch ? parseInt(yearMatch[0]) : new Date().getFullYear();
+const cleaned = s.replace(/^\w{3}\s+/, "");
+const parsed = new Date(cleaned.replace(/(\w+ \d+)$/, "$1 " + year));
+if (!isNaN(parsed.getTime())) {
+const y2 = parsed.getFullYear();
+const m2 = String(parsed.getMonth() + 1).padStart(2, "0");
+const d2 = String(parsed.getDate()).padStart(2, "0");
+return y2 + "-" + m2 + "-" + d2;
+}
+}
+const fb = new Date(s);
+if (!isNaN(fb.getTime())) {
+const y = fb.getFullYear();
+const m = String(fb.getMonth() + 1).padStart(2, "0");
+const d = String(fb.getDate()).padStart(2, "0");
+return y + "-" + m + "-" + d;
+}
+return "";
 }
 
 async function lerSheets() {
